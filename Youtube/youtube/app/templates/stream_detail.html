@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ stream.title }}</title>
+</head>
+<body>
+    <h1>{{ stream.title }}</h1>
+    <iframe src="{{ stream.stream_url }}" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+
+    <div id="chat">
+        {% for chat_message in chat_messages %}
+            <p>{{ chat_message.sender }}: {{ chat_message.message }}</p>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form">
+        <input type="text" id="sender" placeholder="Your Name">
+        <input type="text" id="message" placeholder="Type your message">
+        <button type="button" onclick="sendChatMessage()">Send</button>
+    </form>
+
+    <script>
+        function sendChatMessage() {
+            var sender = document.getElementById('sender').value;
+            var message = document.getElementById('message').value;
+
+            // Make sure both sender and message are not empty
+            if (sender.trim() !== '' && message.trim() !== '') {
+                // Send the chat message via AJAX to the server
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/stream_detail/{{ stream.id }}/send_chat/', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        // Successful response, handle as needed
+                        document.getElementById('message').value = '';  // Clear the message input
+                    } else {
+                        // Handle error
+                        console.error('Error sending chat message:', xhr.statusText);
+                    }
+                };
+                xhr.onerror = function() {
+                    // Handle connection error
+                    console.error('Error connecting to the server');
+                };
+                xhr.send('sender=' + encodeURIComponent(sender) + '&message=' + encodeURIComponent(message));
+            } else {
+                // Handle empty sender or message
+                console.error('Sender and message cannot be empty');
+            }
+        }
+    </script>
+</body>
+</html>
